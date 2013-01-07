@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="phpProxyBuilder" default="ci" basedir=".">
+
+    <!-- ========================================= PROPERTIES ====================================================== -->
+
+    <property name="product" value="phpProxyBuilder"/>
+    <property name="version" value="0.0.1"/>
+    <tstamp>
+        <format property="build.time" pattern="yyyyMMdd-HHmmss" />
+    </tstamp>
+    <tstamp>
+        <format property="build.time.serial" pattern="yyyyMMddHHmmss" />
+    </tstamp>
+    <tstamp>
+        <format property="build.time.full" pattern="yyyy-MM-dd HH:mm:ss" />
+    </tstamp>
+    <property name="build.name" value="${product}-${version}-${build.time}" />
+    
+    <!-- ============================================ BUILD ======================================================== -->
+
+    <target name="clean">
+        <delete dir="${basedir}/build" />
+    </target>
+
+    <target name="init">
+        <mkdir dir="${basedir}/build" />
+        <mkdir dir="${basedir}/build/logs" />
+        <mkdir dir="${basedir}/build/doc" />
+        <mkdir dir="${basedir}/build/coverage" />
+        <mkdir dir="${basedir}/build/dist" />
+    </target>
+    
+    <target name="quick" depends="clean,init"/>
+
+    <!-- ============================================= FULL ======================================================== -->
+
+    <target name="phpunit">
+        <exec executable="phpunit" dir="${basedir}/tests" failonerror="on">
+        </exec>
+        <delete>            
+            <fileset dir="/tmp" includes="unit-test*"/>        
+        </delete>
+    </target>
+    
+    <target name="phpunitExtended">
+        <exec executable="phpunit" dir="${basedir}/tests" failonerror="on">
+            <arg line="--configuration phpunit-extended.xml" />
+        </exec>
+        <delete>            
+            <fileset dir="/tmp" includes="unit-test*"/>        
+        </delete>
+    </target>
+
+    <target name="phpdoc">
+        <exec executable="phpdoc" dir="${basedir}" failonerror="off">
+            <arg line="-d src/ -t build/doc" />
+        </exec>
+    </target>
+    
+    <!-- Depending on how we want to distribute/deploy code, we might want to build some type of release here -->
+    <!-- For now i think a tgz archive is a good start but we could consider some better way of packaging -->
+    <target name="package">
+        <tar destfile="${basedir}/build/dist/${build.name}.tar.gz" compression="gzip" longfile="gnu">
+            <tarfileset dir="${basedir}">
+                <include name="*/**" />
+                
+                <exclude name="**/.git/**"/>
+                <exclude name=".gitignore" />
+                <exclude name="tests/"/>
+                <exclude name="build/" />
+                <exclude name="build.xml" />
+            </tarfileset>
+        </tar>
+    </target>
+    
+    <target name="full" depends="quick,phpunitExtended,package"/>
+
+    <target name="ci"   depends="quick,phpunitExtended,phpdoc"/>
+
+</project>
