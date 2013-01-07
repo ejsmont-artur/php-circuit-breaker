@@ -20,7 +20,7 @@ You can run all tests by any of the following:
 You can run selected test case by running:
 
     cd tests
-    phpunit Unit/PhpProxyBuilder/Proxy/ArrayCachingProxyTest.php
+    phpunit Unit/Ejsmont/CircuitBreaker/Storage/Adapter/DummyAdapterTest.php
 
 ## Author
 
