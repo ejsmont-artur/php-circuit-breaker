@@ -22,51 +22,78 @@ use Ejsmont\CircuitBreaker\Storage\StorageInterface;
  * @package Ejsmont\CircuitBreaker\Components
  */
 class CircuitBreaker implements CircuitBreakerInterface {
-    /*
-     * @var Zend_CircuitBreaker_Storage_Interface used to load/save statistics
-     */
 
+    /**
+     * @var CircuitBreakerInterface used to load/save availability statistics
+     */
     protected $storageAdapter;
 
-    /*
-     * array of settings per service name (how many failures to allow etc)
+    /**
+     * @var int default threshold, if service fails this many times will be disabled 
      */
-    protected $settings;
+    protected $defaultMaxFailures;
 
-    public function __construct(StorageInterface $storageAdapter, $config) {
-        $this->storageAdapter = $storageAdapter;
-        // load settings for all configured service names
-        foreach ($config as $serviceName => $settings) {
-            $this->addServiceSettings($serviceName, $config);
-        }
+    /**
+     * @var int  how many seconds should we wait before retry 
+     */
+    protected $defaultRetryTimeout;
+
+    /**
+     * Array with configuration per service name, format:
+     *  array(
+     *      "serviceName1" => array('maxFailures' => X, 'retryTimeout => Y),
+     *      "serviceName2" => array('maxFailures' => X, 'retryTimeout => Y),
+     *  )
+     * 
+     * @var array[] settings per service name
+     */
+    protected $settings = array();
+
+    /**
+     * Configure instance with storage implementation and default threshold and retry timeout.
+     *
+     * @param StorageInterface $storage      storage implementation
+     * @param int              $maxFailures  default threshold, if service fails this many times will be disabled
+     * @param int              $retryTimeout how many seconds should we wait before retry
+     */
+    public function __construct(StorageInterface $storage, $maxFailures = 20, $retryTimeout = 60) {
+        $this->storageAdapter = $storage;
+        $this->defaultMaxFailures = $maxFailures;
+        $this->defaultRetryTimeout = $retryTimeout;
     }
 
-    // -------------------------- PRIVATE HELPERS ---------------------------------
-    // load value from config obj or array, if no config passed set defaults
-    private function addServiceSettings($serviceName, $config = array()) {
-        $newSet = array('maxFailures' => 20,
-            'retryTimeout' => 60);
-
-        // if passed array with settings
-        if (is_array($config)) {
-            if (isset($config[$serviceName]['maxFailures'])) {
-                $newSet['maxFailures'] = $config[$serviceName]['maxFailures'];
-            }
-            if (isset($config[$serviceName]['retryTimeout'])) {
-                $newSet['retryTimeout'] = $config[$serviceName]['retryTimeout'];
-            }
-        }
-
-        // if passes config object with settings
-        //FIXME - implement
-
-        $this->settings[$serviceName] = $newSet;
+    /**
+     * Use this method only if you want to add server specific threshold and retry timeout.
+     *
+     * @param StorageInterface $storage      storage implementation
+     * @param int              $maxFailures  default threshold, if service fails this many times will be disabled
+     * @param int              $retryTimeout how many seconds should we wait before retry
+     * @return CircuitBreaker
+     */
+    public function setServiceSettings($serviceName, $maxFailures, $retryTimeout) {
+        $this->settings[$serviceName] = array(
+            'maxFailures' => $maxFailures ? $maxFailures : $this->defaultMaxFailures,
+            'retryTimeout' => $retryTimeout ? $retryTimeout : $this->defaultRetryTimeout,
+        );
+        return $this;
     }
 
+    // ---------------------- HELPERS -----------------
+
+    /**
+     * Load setting or initialise service name with defaults for faster lookups
+     * 
+     * @param string $serviceName   what service to look for
+     * @param string $variable      what setting to look for
+     * @return int 
+     */
     private function getSetting($serviceName, $variable) {
         // make sure there are settings for the service
         if (!isset($this->settings[$serviceName])) {
-            $this->addServiceSettings($serviceName);
+            $this->settings[$serviceName] = array(
+                'maxFailures' => $this->defaultMaxFailures,
+                'retryTimeout' => $this->defaultRetryTimeout,
+            );
         }
         return $this->settings[$serviceName][$variable];
     }

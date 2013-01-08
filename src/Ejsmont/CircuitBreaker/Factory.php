@@ -13,107 +13,44 @@
 namespace Ejsmont\CircuitBreaker;
 
 use Ejsmont\CircuitBreaker\Core\CircuitBreaker;
-use Ejsmont\CircuitBreaker\Storage\StorageInterface;
 use Ejsmont\CircuitBreaker\Storage\Adapter\ApcAdapter;
 use Ejsmont\CircuitBreaker\Storage\Adapter\DummyAdapter;
-
+use Ejsmont\CircuitBreaker\Storage\Decorator\ArrayDecorator;
 
 /**
  * Allows easy assembly of circuit breaker instances.
  * 
- * @see Ejsmont\CircuitBreaker\CircuitBreaker
+ * @see Ejsmont\CircuitBreaker\CircuitBreakerInterface
  * @package Ejsmont\CircuitBreaker\PublicApi 
  */
 class Factory {
-    /**
-     * Factory creates Circuit breaker for test purposes, dummy storage adapter
-     */
-
-    const DUMMY_ADAPTER = 'DummyAdapterNotSavingValues';
-    /*
-     * Facotry will create instance of APC storage adapter
-     */
-    const APC_ADAPTER = 'ApcAdapter';
 
     /**
-     * @var Ejsmont\CircuitBreaker\Storage\StorageInterface used to load/save statistics
+     * Creates a circuit breaker with same settings for all services using an array under a single APC cache key.
+     *
+     * @param int   $maxFailures    how many times do we allow service to fail before considering it offline
+     * @param int   $retryTimeout   how many seconds should we wait before attempting retry
+     * 
+     * @return CircuitBreakerInterface 
      */
-    protected $storageAdapter;
+    public static function getSingleApcInstance($maxFailures = 20, $retryTimeout = 30) {
+        $storage = new ArrayDecorator(new ApcAdapter());
+        return new CircuitBreaker($storage, $maxFailures, $retryTimeout);
+    }
 
     /**
-     * $var array[] of settings per service name (how many failures to allow etc)
+     * Creates a circuit breaker using php array() as storage.
+     * This instance looses the state when script execution ends. 
+     * Useful for testing and/or extremely long running backend scripts.
+     *
+     * @param int   $maxFailures    how many times do we allow service to fail before considering it offline
+     * @param int   $retryTimeout   how many seconds should we wait before attempting retry
+     * 
+     * @return CircuitBreakerInterface 
      */
-    protected $settings;
-
-    /**
-     * Convinience method allowing you to create CircuitBreaker with different types of storage engine
-     * Allowed parameters:
-     * 		Zend_CircuitBreaker_Storage_Interface
-     * 		Zend_Cache_Backend_Interface
-     * 		Zend_Cache_Core
-     *  	self::DUMMY_ADAPTER - will create dummy test adapter
-     *  	self::APC_ADAPTER	- will create lightweight APC implementation with 1h TTL
-     *  
-     *  @throws \Exception if parameter does not allow to create working instance
-     *  
-     *  @todo - make sure all instances can be created, allow config objects, set config format, allow defaults
-     */
-    public static function getInstance($storage = false, $config = false) {
-        if (!is_array($config)) {
-            $config = array();
-        }
-        if (is_object($storage)) {
-            if ($storage instanceof StorageInterface) {
-                // provided storage implementing instance
-                return new CircuitBreaker($storage, $config);
-            }
-        } elseif ($adapter == self::DUMMY_ADAPTER) {
-            return new self(new DummyAdapter(), $config);
-        } elseif ($adapter == self::APC_ADAPTER) {
-            return new self(new ApcAdapter(), $config);
-        }
-        throw new \Exception("CircuitBreaker Incorrect argument.");
+    public static function getDummyInstance($maxFailures = 20, $retryTimeout = 30) {
+        $storage = new DummyAdapter();
+        return new CircuitBreaker($storage, $maxFailures, $retryTimeout);
     }
-
-    private function __construct(Storage $storageAdapter, $config) {
-        $this->storageAdapter = $storageAdapter;
-        // load settings for all configured service names
-        foreach ($config as $serviceName => $settings) {
-            $this->addServiceSettings($serviceName, $config);
-        }
-    }
-
-    // -------------------------- PRIVATE HELPERS ---------------------------------
-    // load value from config obj or array, if no config passed set defaults
-    private function addServiceSettings($serviceName, $config = array()) {
-        $newSet = array('maxFailures' => 20,
-            'retryTimeout' => 60);
-
-        // if passed array with settings
-        if (is_array($config)) {
-            if (isset($config[$serviceName]['maxFailures'])) {
-                $newSet['maxFailures'] = $config[$serviceName]['maxFailures'];
-            }
-            if (isset($config[$serviceName]['retryTimeout'])) {
-                $newSet['retryTimeout'] = $config[$serviceName]['retryTimeout'];
-            }
-        }
-
-        // if passes config object with settings
-        //FIXME - implement
-
-        $this->settings[$serviceName] = $newSet;
-    }
-
-    private function getSetting($serviceName, $variable) {
-        // make sure there are settings for the service
-        if (!isset($this->settings[$serviceName])) {
-            $this->addServiceSettings($serviceName);
-        }
-        return $this->settings[$serviceName][$variable];
-    }
-
-  
-
 
 }

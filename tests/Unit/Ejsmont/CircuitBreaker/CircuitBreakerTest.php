@@ -4,6 +4,7 @@ namespace Tests\Unit\Ejsmont\CircuitBreaker;
 
 use Ejsmont\CircuitBreaker\Factory;
 use Ejsmont\CircuitBreaker\Storage\Adapter\DummyAdapter;
+use Ejsmont\CircuitBreaker\Core\CircuitBreaker;
 
 class CircuitBreakerTest extends \PHPUnit_Framework_TestCase {
 
@@ -11,20 +12,24 @@ class CircuitBreakerTest extends \PHPUnit_Framework_TestCase {
     private $_cb;
     private $conf = array(
         "dbKnown" => array('maxFailures' => 5, 'retryTimeout' => 5),
-        "dbWrong" => array('maxFailure' => 5, 'retryTimeou' => 5),
+        "dbWrong" => array('maxFailures' => 0, 'retryTimeout' => 0),
     );
 
     protected function setUp() {
+
         parent::setUp();
         $this->_adapter = new DummyAdapter();
-        $this->_cb = Factory::getInstance($this->_adapter, $this->conf);
+        $this->_cb = new CircuitBreaker($this->_adapter);
+
+        foreach ($this->conf as $serviceName => $config) {
+            $this->_cb->setServiceSettings($serviceName, $config['maxFailures'], $config['retryTimeout']);
+        }
     }
 
     protected function tearDown() {
         $this->_adapter = null;
         $this->_cb = null;
         parent::tearDown();
-        apc_clear_cache('user');
     }
 
     public function testOk() {
