@@ -34,7 +34,7 @@
 
     <!-- ============================================= FULL ======================================================== -->
 
-    <target name="phpunit">
+    <target name="phpunit" depends="quick">
         <exec executable="phpunit" dir="${basedir}/tests" failonerror="on">
         </exec>
         <delete>            
@@ -42,7 +42,7 @@
         </delete>
     </target>
     
-    <target name="phpunitExtended">
+    <target name="phpunitExtended" depends="quick">
         <exec executable="phpunit" dir="${basedir}/tests" failonerror="on">
             <arg line="--configuration phpunit-extended.xml" />
         </exec>
@@ -51,7 +51,7 @@
         </delete>
     </target>
 
-    <target name="phpdoc">
+    <target name="phpdoc" depends="quick">
         <exec executable="phpdoc" dir="${basedir}" failonerror="off">
             <arg line="-d src/ -t build/doc" />
         </exec>
@@ -59,7 +59,7 @@
     
     <!-- Depending on how we want to distribute/deploy code, we might want to build some type of release here -->
     <!-- For now i think a tgz archive is a good start but we could consider some better way of packaging -->
-    <target name="package">
+    <target name="package" depends="init">
         <tar destfile="${basedir}/build/dist/${build.name}.tar.gz" compression="gzip" longfile="gnu">
             <tarfileset dir="${basedir}">
                 <include name="*/**" />
@@ -73,8 +73,8 @@
         </tar>
     </target>
     
-    <target name="full" depends="quick,phpunitExtended,package"/>
+    <target name="full" depends="phpunitExtended,package"/>
 
-    <target name="ci"   depends="quick,phpunitExtended,phpdoc"/>
-
+    <target name="ci"   depends="phpunitExtended,phpdoc"/>
+    
 </project>

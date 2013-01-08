@@ -68,4 +68,15 @@ class ApcAdapterTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("", $this->_adapter->loadStatus('B', 'bbb'));
     }
 
+    public function testPrefix() {
+        $adapter1 = new ApcAdapter();
+        $adapter2 = new ApcAdapter(1000, 'EjsmontCircuitBreakerApc');
+        $adapter3 = new ApcAdapter(1000, 'EjsmontCircuitWrong');
+
+        $adapter1->saveStatus('abc', 'def', 951);
+
+        $this->assertEquals(951, $adapter2->loadStatus('abc', 'def'));
+        $this->assertEquals("", $adapter3->loadStatus('abc', 'def'));
+    }
+
 }
