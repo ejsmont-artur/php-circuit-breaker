@@ -16,36 +16,39 @@ use Ejsmont\CircuitBreaker\Storage\Adapter\BaseAdapter;
 use Ejsmont\CircuitBreaker\Storage\StorageException;
 
 /**
- * Recommended adapter using APC local shared memory cache.
- * Super fast, safe, always available (if installed).
- * Does not introduce remote point of failure.
- * Can be efficently used to load/save each attribute separately if you wish
+ * Reasonably useful implementation if you needed to share circuit breaker across servers.
+ * It incurs the network connection penalty so for optimal performance APC or shared 
+ * memeory is preferred but if extra millisecods are not an issue this 
+ * adapter could work well. Consider using array adapter to minimise memcache calls.
  * 
  * @see Ejsmont\CircuitBreaker\Storage\StorageInterface
  * @package Ejsmont\CircuitBreaker\Components
  */
-class ApcAdapter extends BaseAdapter {
+class MemcachedAdapter extends BaseAdapter {
 
     /**
-     * Configure instance
-     * 
-     * @param Integer $ttl          How long should circuit breaker data persist (between updates)
-     * @param String  $cachePrefix  Value has to be string. If empty default cache key prefix is used.
+     * @var Memcached
      */
-    public function __construct($ttl = 3600, $cachePrefix = false) {
+    private $memcached;
+
+    /**
+     * Prepare instance
+     * 
+     * @param Memcached $memcached
+     */
+    public function __construct(\Memcached $memcached, $ttl = 3600, $cachePrefix = false) {
         parent::__construct($ttl, $cachePrefix);
+        $this->memcached = $memcached;
     }
 
     /**
-     * Helper method to make sure that APC extension is loaded
+     * Helper method to make sure that memcached extension is loaded
      * 
-     * @throws Ejsmont\CircuitBreaker\Storage\StorageException if APC is not loaded
+     * @throws Ejsmont\CircuitBreaker\Storage\StorageException if memcached is not loaded
      * @return void
      */
     protected function checkExtension() {
-        if (!function_exists("apc_store")) {
-            throw new StorageException("APC extension not loaded.");
-        }
+        // nothing to do as you would not have \Memcached instance in constructor if extension was not loaded
     }
 
     /**
@@ -57,7 +60,11 @@ class ApcAdapter extends BaseAdapter {
      * @throws Ejsmont\CircuitBreaker\Storage\StorageException if storage error occurs, handler can not be used
      */
     protected function load($key) {
-        return apc_fetch($key);
+        try {
+            return $this->memcached->get($key);
+        } catch (\Exception $e) {
+            throw new StorageException("Failed to load memcached key: $key", 1, $e);
+        }
     }
 
     /**
@@ -71,9 +78,10 @@ class ApcAdapter extends BaseAdapter {
      * @throws Ejsmont\CircuitBreaker\Storage\StorageException if storage error occurs, handler can not be used
      */
     protected function save($key, $value, $ttl) {
-        $result = apc_store($key, $value, $ttl);
-        if ($result === false) {
-            throw new StorageException("Failed to save apc key: $key");
+        try {
+            $this->memcached->set($key, $value, $ttl);
+        } catch (\Exception $e) {
+            throw new StorageException("Failed to save memcached key: $key", 1, $e);
         }
     }
 

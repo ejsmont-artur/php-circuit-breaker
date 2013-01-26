@@ -15,6 +15,7 @@ namespace Ejsmont\CircuitBreaker;
 use Ejsmont\CircuitBreaker\Core\CircuitBreaker;
 use Ejsmont\CircuitBreaker\Storage\Adapter\ApcAdapter;
 use Ejsmont\CircuitBreaker\Storage\Adapter\DummyAdapter;
+use Ejsmont\CircuitBreaker\Storage\Adapter\MemcachedAdapter;
 use Ejsmont\CircuitBreaker\Storage\Decorator\ArrayDecorator;
 
 /**
@@ -26,15 +27,16 @@ use Ejsmont\CircuitBreaker\Storage\Decorator\ArrayDecorator;
 class Factory {
 
     /**
-     * Creates a circuit breaker with same settings for all services using an array under a single APC cache key.
-     *
+     * Creates a circuit breaker with same settings for all services using raw APC cache key.
+     * APC raw adapter is faster than when wrapped with array decorator as APC uses direct memory access.
+     * 
      * @param int   $maxFailures    how many times do we allow service to fail before considering it offline
      * @param int   $retryTimeout   how many seconds should we wait before attempting retry
      * 
      * @return CircuitBreakerInterface 
      */
     public static function getSingleApcInstance($maxFailures = 20, $retryTimeout = 30) {
-        $storage = new ArrayDecorator(new ApcAdapter());
+        $storage = new ApcAdapter();
         return new CircuitBreaker($storage, $maxFailures, $retryTimeout);
     }
 
@@ -50,6 +52,20 @@ class Factory {
      */
     public static function getDummyInstance($maxFailures = 20, $retryTimeout = 30) {
         $storage = new DummyAdapter();
+        return new CircuitBreaker($storage, $maxFailures, $retryTimeout);
+    }
+
+    /**
+     * Creates a circuit breaker with same settings for all services using memcached instance as a backend
+     *
+     * @param Memcached $memcached      instance of a connected Memcached object
+     * @param int       $maxFailures    how many times do we allow service to fail before considering it offline
+     * @param int       $retryTimeout   how many seconds should we wait before attempting retry
+     * 
+     * @return CircuitBreakerInterface 
+     */
+    public static function getMemcachedInstance(\Memcached $memcached, $maxFailures = 20, $retryTimeout = 30) {
+        $storage = new ArrayDecorator(new MemcachedAdapter($memcached));
         return new CircuitBreaker($storage, $maxFailures, $retryTimeout);
     }
 

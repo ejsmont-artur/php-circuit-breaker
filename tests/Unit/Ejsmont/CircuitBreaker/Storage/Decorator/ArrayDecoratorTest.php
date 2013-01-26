@@ -102,7 +102,7 @@ class ArrayDecoratorTest extends \PHPUnit_Framework_TestCase {
 
     public function testPrefix() {
         $adapter1 = new ApcAdapter();
-        $adapter2 = new ApcAdapter(1000, 'EjsmontCircuitBreakerApc');
+        $adapter2 = new ApcAdapter(1000, 'EjsmontCircuitBreaker');
         $adapter3 = new ApcAdapter(1000, 'EjsmontCircuitWrong');
 
         $adapter1->saveStatus('abc', 'def', 951);

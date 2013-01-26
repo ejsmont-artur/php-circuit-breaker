@@ -193,5 +193,3 @@ class CircuitBreaker implements CircuitBreakerInterface {
     }
 
 }
-
-?>

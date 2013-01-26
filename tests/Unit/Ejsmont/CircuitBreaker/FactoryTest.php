@@ -38,4 +38,41 @@ class FactoryTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($cb instanceof CircuitBreakerInterface);
     }
 
+    public function testMemcachedArray() {
+        if (!class_exists('\Memcached')) {
+            $this->markTestSkipped("extension not loaded");
+        }
+        $this->_connection = new \Memcached();
+        $this->_connection->addServer("localhost", 11211);
+
+        $factory = new Factory();
+        $cb = $factory->getMemcachedInstance($this->_connection, 3, 1);
+
+        $this->assertTrue($cb instanceof CircuitBreakerInterface);
+
+        // service with multiple failures
+        $this->assertTrue($cb->isAvailable("serviceOne"));
+        $cb->reportFailure("serviceOne");
+        $cb->reportFailure("serviceOne");
+        $cb->reportFailure("serviceOne");
+        $cb->reportFailure("serviceOne");
+        $this->assertFalse($cb->isAvailable("serviceOne"));
+
+        // ervice seen first time = ok
+        $this->assertTrue($cb->isAvailable("serviceUnknown"));
+
+        // service with one failure is ok
+        $cb->reportSuccess("serviceTwo");
+        $this->assertTrue($cb->isAvailable("serviceTwo"));
+
+        // service with successes is ok
+        $cb->reportFailure("serviceFour");
+        $cb->reportFailure("serviceFour");
+        $cb->reportFailure("serviceFour");
+        $cb->reportFailure("serviceFour");
+        $cb->reportSuccess("serviceFour");
+        $cb->reportSuccess("serviceFour");
+        $this->assertTrue($cb->isAvailable("serviceFour"));
+    }
+
 }
