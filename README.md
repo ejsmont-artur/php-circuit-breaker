@@ -88,12 +88,14 @@ circuit breaker will allow a single process to attempt
 
 ## Performance Impact
 
-Overhead of the Circuit Breaker is neglible. APC implementation takes roughly 0.0002s to perform 
-isAvailable() and then reportSuccess() or reportFailure().
+Overhead of the Circuit Breaker is negligible. 
+
+APC implementation takes roughly 0.0002s to perform isAvailable() and then reportSuccess() or reportFailure().
 
 Memcache adapter is in range of 0.0005s when talking to the local memcached process. 
 
-The only potential performance impact is network connection time, if you chose memcached or other remote backend.
+The only potential performance impact is network connection time. If you chose to use remote memcached server or
+implement your own custom StorageAdapter.
 
 ## Running tests
 
