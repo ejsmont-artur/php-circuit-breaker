@@ -36,7 +36,7 @@ Code of your application could look something like:
     }
 </pre>
 
-## Payment Gateway Use Case
+## Use Case - Payment Gateway
 
 * Web application depends on third party service (for example a payment gateway).
 * Web application needs to keep track when 3rd party service is unavailable.
@@ -89,7 +89,7 @@ circuit breaker will allow a single process to attempt
 ## Performance Impact
 
 Overhead of the Circuit Breaker is neglible. APC implementation takes roughly 0.0002s to perform 
-isAvailable and then reportXXX.
+isAvailable() and then reportSuccess() or reportFailure().
 
 Memcache adapter is in range of 0.0005s when talking to the local memcached process. 
 
