@@ -1,8 +1,8 @@
 # php-circuit-breaker
 
-Library providing extremely simple circuit breaker component without external dependencies.
-
 [![Build Status](https://travis-ci.org/ejsmont-artur/php-circuit-breaker.png?branch=master)](https://travis-ci.org/ejsmont-artur/php-circuit-breaker)
+
+Library providing extremely simple circuit breaker component without external dependencies.
 
 ## Motivation & Benefits
 
