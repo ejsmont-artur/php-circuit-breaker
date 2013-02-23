@@ -7,4 +7,5 @@ before_script:
   - ./tests/before-travisci.sh
   - pear channel-discover pear.phpdoc.org
   - pear install phpdoc/phpDocumentor-alpha
+  - phpenv rehash
 script: ant ci
