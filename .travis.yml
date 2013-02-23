@@ -1,7 +1,10 @@
 language: php
 php:
+  - "5.5"
   - "5.4"
   - "5.3"
 before_script:
   - ./tests/before-travisci.sh
+  - pear channel-discover pear.phpdoc.org
+  - pear install phpdoc/phpDocumentor-alpha
 script: ant ci
