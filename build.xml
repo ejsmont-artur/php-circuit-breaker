@@ -73,8 +73,16 @@
         </tar>
     </target>
     
-    <target name="full" depends="phpunitExtended,package"/>
+    <!-- print coverage -->
+    <target name="print-code-coverage">
+        <exec executable="bash" dir="${basedir}" failonerror="off" >
+            <arg value="-c" />
+            <arg value="cat build/logs/clover.xml | awk '/files/ {lines = $10; covered = $11; gsub(/[^0-9]*/, &quot;&quot;, lines);  gsub(/[^0-9]*/, &quot;&quot;, covered); coverage = (covered * 100) / lines; printf &quot;Total code coverage: %.2f %%&quot;, coverage}'" />
+        </exec>
+    </target>
+    
+    <target name="full" depends="phpunitExtended,package,print-code-coverage"/>
 
-    <target name="ci"   depends="phpunitExtended,phpdoc"/>
+    <target name="ci"   depends="phpunitExtended,phpdoc,print-code-coverage"/>
     
 </project>
