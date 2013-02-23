@@ -7,12 +7,12 @@ use Ejsmont\CircuitBreaker\CircuitBreakerInterface;
 
 class FactoryTest extends \PHPUnit_Framework_TestCase {
 
-    protected function tearDown() {
-        apc_clear_cache('user');
-        parent::tearDown();
-    }
-
     public function testThreshold() {
+        if(!function_exists('apc_clear_cache')){
+            $this->markTestSkipped("APC not installed");
+        }
+        apc_clear_cache('user');
+    
         $factory = new Factory();
         $cb = $factory->getSingleApcInstance(3);
 

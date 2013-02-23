@@ -10,13 +10,18 @@ class ApcAdapterTest extends \PHPUnit_Framework_TestCase {
 
     protected function setUp() {
         parent::setUp();
+        
+        if(!function_exists('apc_clear_cache')){
+            $this->markTestSkipped("APC not installed");
+        }
+        apc_clear_cache('user');
+        
         $this->_adapter = new ApcAdapter();
     }
 
     protected function tearDown() {
         $this->_adapter = null;
         parent::tearDown();
-        apc_clear_cache('user');
     }
 
     public function testSave() {

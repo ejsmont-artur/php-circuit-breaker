@@ -15,12 +15,17 @@ class ArrayDecoratorTest extends \PHPUnit_Framework_TestCase {
 
     protected function setUp() {
         parent::setUp();
+
+        if(!function_exists('apc_clear_cache')){
+            $this->markTestSkipped("APC not installed");
+        }
+        apc_clear_cache('user');
+
         $this->adapter = new ArrayDecorator(new ApcAdapter());
     }
 
     protected function tearDown() {
         $this->adapter = null;
-        apc_clear_cache('user');
         parent::tearDown();
     }
 
