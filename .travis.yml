@@ -7,5 +7,4 @@ before_script:
   - pear channel-discover pear.phpdoc.org
   - pear install phpdoc/phpDocumentor-alpha
   - phpenv rehash
-  - php -i
 script: ant ci
