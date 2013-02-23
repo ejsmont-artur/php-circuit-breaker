@@ -2,7 +2,8 @@
     "name": "ejsmont-artur/php-circuit-breaker",
     "type": "library",
     "description": "PHP Circuit Breaker component",
-    "keywords": ["circuit breaker","graceful", "error handling", "high availability"],
+    "keywords": ["circuit breaker","graceful", "error handling"],
+    "license": "MIT",
     "homepage": "https://github.com/ejsmont-artur/php-circuit-breaker",
     "authors": [
         {
