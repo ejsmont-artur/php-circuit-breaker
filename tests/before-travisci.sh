@@ -7,6 +7,9 @@ phpize
 sudo make install
 INI_DIR=`php --ini | grep "Scan for additional" | sed -e "s|.*:\s*||"`
 INI_FILE="$INI_DIR/apc.ini"
+
+echo "Enabling apc in $INI_FILE"
+
 echo "extension=apc.so
 [apc]
 apc.enabled = 1
