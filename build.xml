@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="phpProxyBuilder" default="ci" basedir=".">
+<project name="php-circuit-breaker" default="ci" basedir=".">
 
-    <!-- ========================================= PROPERTIES ====================================================== -->
+    <!-- ===================================== CUSTOM PROPERTIES =================================================== -->
 
-    <property name="product" value="phpProxyBuilder"/>
-    <property name="version" value="0.0.1"/>
+    <property name="product" value="php-circuit-breaker"/>
+    <property name="version" value="0.0.2"/>
+
+    <!-- ==================================== GENERIC PROPERTIES =================================================== -->
+    
     <tstamp>
         <format property="build.time" pattern="yyyyMMdd-HHmmss" />
     </tstamp>
@@ -16,7 +19,7 @@
     </tstamp>
     <property name="build.name" value="${product}-${version}-${build.time}" />
     
-    <!-- ============================================ BUILD ======================================================== -->
+    <!-- ======================================== PREPARATIONS ===================================================== -->
 
     <target name="clean">
         <delete dir="${basedir}/build" />
@@ -31,6 +34,25 @@
     </target>
     
     <target name="quick" depends="clean,init"/>
+
+    <!-- ========================================== COMPOSER ====================================================== -->
+
+    <target name="check-composer">
+        <available property="composer.phar.exists" file="composer.phar"/>
+    </target>
+
+    <target name="fetch-composer" depends="check-composer" unless="composer.phar.exists">
+        <exec executable="/bin/bash" failonerror="on">
+            <arg value="-c" />
+            <arg value="curl -s https://getcomposer.org/installer | php" />
+        </exec>
+    </target>
+
+    <target name="setup" depends="fetch-composer">
+        <exec executable="php" dir="${basedir}" failonerror="on">
+            <arg line="composer.phar update" />
+        </exec>
+    </target>
 
     <!-- ============================================= FULL ======================================================== -->
 
@@ -80,9 +102,51 @@
             <arg value="cat build/logs/clover.xml | awk '/files/ {lines = $10; covered = $11; gsub(/[^0-9]*/, &quot;&quot;, lines);  gsub(/[^0-9]*/, &quot;&quot;, covered); coverage = (covered * 100) / lines; printf &quot;Total code coverage: %.2f %%&quot;, coverage}'" />
         </exec>
     </target>
-    
-    <target name="full" depends="phpunitExtended,package,print-code-coverage"/>
 
+    <!-- ======================================== GIT RELATED ====================================================== -->
+
+    <target name="git-check-status">
+        <exec executable="/bin/bash" failonerror="on" outputproperty="git-status-not-empty">
+            <arg value="-c" />
+            <arg value="git status -s" />
+        </exec>
+    </target>
+
+    <target name="git-fetch-tags">
+        <exec executable="/bin/bash" failonerror="on">
+            <arg value="-c" />
+            <arg value="git fetch --tags" />
+        </exec>
+    </target>
+    
+    <target name="git-create-tag" depends="git-check-status">
+        <fail message="Can not tag a dirty folder. Commit or revert first.">
+            <condition>
+                <not>
+                    <equals arg1="${git-status-not-empty}" arg2=""/>
+                </not>
+            </condition>
+        </fail>
+        <exec executable="/bin/bash" failonerror="on">
+            <arg value="-c" />
+            <arg value="git tag -m 'taggin ${version}' ${version}" />
+        </exec>
+    </target>
+
+    <target name="git-push-tags">
+        <exec executable="/bin/bash" failonerror="on">
+            <arg value="-c" />
+            <arg value="git push --tags" />
+        </exec>
+    </target>
+
+    <target name="git-tag"   depends="git-fetch-tags,git-create-tag,git-push-tags"/>
+
+    <!-- ===================================== COMPOUND SHORTCUTS ================================================== -->
+    
     <target name="ci"   depends="phpunitExtended,phpdoc,print-code-coverage"/>
+
+    <!-- reload dependencies and run full CI build -->
+    <target name="full" depends="setup,phpunitExtended,phpdoc,package,print-code-coverage"/>
     
 </project>

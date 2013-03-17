@@ -1,13 +1,39 @@
-# php-circuit-breaker
+# What is php-circuit-breaker
 
 [![Build Status](https://travis-ci.org/ejsmont-artur/php-circuit-breaker.png?branch=master)](https://travis-ci.org/ejsmont-artur/php-circuit-breaker)
 
-Library providing extremely simple circuit breaker component without external dependencies.
+It is a library providing extremely easy to use circuit breaker component. It does not require external dependencies and it has default storage
+implementations for APC and Memcached but can be extended multiple ways.
 
-## Motivation & Benefits
+# Frameworks support
+
+This library does not require any particular PHP framework, all you need is PHP 5.3 or higher.
+
+## Symfony 2
+
+If you are using [Symfony 2](https://github.com/symfony/symfony) framework you should use 
+[php-circuit-breaker-bundle](https://github.com/ejsmont-artur/php-circuit-breaker-bundle). It is a bundle i have 
+created to wrap up php-circuit-breaker and integrate it with [Symfony 2](https://github.com/symfony/symfony) components and Dependency Injection.
+
+## Other Frameworks
+
+If you are using other frameworks and you would like to use php-circuit-breaker please let me know and we can try to 
+build up an open source integration just like the one for [Symfony 2](https://github.com/symfony/symfony).
+
+# Motivation & Benefits
 
 * Allow application to detect failures and adapt its behaviour without human intervention.
 * Increase robustness of services by addinf fail-safe functionality into modules.
+
+# Installation
+
+You can download sources and use them with your autoloader or you can use composer in which case all you nees is a require like this:
+
+    "require": {
+        "ejsmont-artur/php-circuit-breaker": "*"
+    },
+
+After that you should update composer dependencies and you are good to go.
 
 ## Use Case - Optional Feature
 
@@ -21,13 +47,13 @@ Code of your application could look something like:
     $circuitBreaker = $factory->getSingleApcInstance(30, 300);
 
     $userProfile = null;
-    if( $cb->isAvailable("UserProfileService") ){
+    if( $circuitBreaker->isAvailable("UserProfileService") ){
         try{
             $userProfile = $userProfileService->loadProfileOrWhatever();
-            $cb->reportSuccess("UserProfileService");
+            $circuitBreaker->reportSuccess("UserProfileService");
         }catch( UserProfileServiceConnectionException $e ){
             // network failed - report it as failure
-            $cb->reportFailure("UserProfileService");
+            $circuitBreaker->reportFailure("UserProfileService");
         }catch( Exception $e ){
             // something went wrong but it is not service's fault, dont report as failure
         }
@@ -57,10 +83,10 @@ Backend that is talking to the payment service could have the following code:
     try{
         // try to process the payment
         // then tell circuit breaker that it went well
-        $cb->reportSuccess("PaymentOptionOne");
+        $circuitBreaker->reportSuccess("PaymentOptionOne");
     }catch( SomePaymentConnectionException $e ){
         // If you get network error report it as failure
-        $cb->reportFailure("PaymentOptionOne");
+        $circuitBreaker->reportFailure("PaymentOptionOne");
     }catch( Exception $e ){
         // in case of your own error handle it however it makes sense but
         // dont tell circuit breaker it was 3rd party service failure
@@ -75,12 +101,12 @@ Example code could look like this:
     $factory = new Ejsmont\CircuitBreaker\Factory();
     $circuitBreaker = $factory->getSingleApcInstance(30, 300);
 
-    if ($cb->isAvailable("PaymentOptionOne")) {
+    if ($circuitBreaker->isAvailable("PaymentOptionOne")) {
         // display the option
     }
 </pre>
 
-## Features
+# Features
 
 * Track multiple services through a single Circuit Breaker instance.
 * Pluggable backend adapters, provided APC and Memcached by default.
@@ -88,7 +114,7 @@ Example code could look like this:
 * Customisable retry timeout. You do not want to disable the service forever. After provided timeout 
 circuit breaker will allow a single process to attempt 
 
-## Performance Impact
+# Performance Impact
 
 Overhead of the Circuit Breaker is negligible. 
 
@@ -99,7 +125,7 @@ Memcache adapter is in range of 0.0005s when talking to the local memcached proc
 The only potential performance impact is network connection time. If you chose to use remote memcached server or
 implement your own custom StorageAdapter.
 
-## Running tests
+# Running tests
 
 * Tests are run via PHPUnit It is assumed to be installed via PEAR.
 * Tests can be ran using phpunit alone or via ant build targets.
