@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/ejsmont-artur/php-circuit-breaker.png?branch=master)](https://travis-ci.org/ejsmont-artur/php-circuit-breaker)
 
+A component helping you gracefully handle outages and timeouts of external services (usually remote, 3rd party services).
+
 It is a library providing extremely easy to use circuit breaker component. It does not require external dependencies and it has default storage
 implementations for APC and Memcached but can be extended multiple ways.
 
@@ -35,11 +37,11 @@ You can download sources and use them with your autoloader or you can use compos
 
 After that you should update composer dependencies and you are good to go.
 
-## Use Case - Optional Feature
+## Use Case - Non-Critical Feature
 
-* Your application has an Optional Feature like: user tracking, stats, recommendations etc
+* Your application has an Non-Critical Feature like: user tracking, stats, recommendations etc
 * The optional feature uses remote service that causes outages of your application.
-* You want to keep applicaton and core processes available when "Optional Feature" services fail.
+* You want to keep applicaton and core processes available when "Non-Critical Feature" fails.
 
 Code of your application could look something like:
 <pre>
@@ -75,7 +77,7 @@ payment option is hidden from the user.
 As you can see that is a very powerful concept of selectively disabling feautres at runtime but still allowing the
 core business processes to be uninterrupted.
 
-Backend that is talking to the payment service could have the following code:
+Backend talking to the payment service could look like this:
 <pre>
     $factory = new Ejsmont\CircuitBreaker\Factory();
     $circuitBreaker = $factory->getSingleApcInstance(30, 300);
@@ -96,7 +98,7 @@ Backend that is talking to the payment service could have the following code:
 Since you are recording failed and successful operations you can now use them in the front end as well 
 to hide payment options that are failing.
 
-Example code could look like this:
+Frontend rendering the available payment options could look like this:
 <pre>
     $factory = new Ejsmont\CircuitBreaker\Factory();
     $circuitBreaker = $factory->getSingleApcInstance(30, 300);
