@@ -12,8 +12,6 @@
 
 namespace Ejsmont\CircuitBreaker\Storage\Decorator;
 
-use Ejsmont\CircuitBreaker\Storage\StorageInterface;
-
 /**
  * This file is part of the php-circuit-breaker package.
  * 
