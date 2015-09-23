@@ -2,28 +2,28 @@
 
 namespace Tests\Unit\Ejsmont\CircuitBreaker\Adapter;
 
-use Ejsmont\CircuitBreaker\Storage\Adapter\MemcachedAdapter;
+use Ejsmont\CircuitBreaker\Storage\Adapter\RedisAdapter;
 
-class MemcachedAdapterTest extends \PHPUnit_Framework_TestCase {
+class RedisAdapterTest extends \PHPUnit_Framework_TestCase {
 
     /**
-     * @var MemcachedAdapter 
+     * @var RedisAdapter
      */
     private $_adapter;
 
     /**
-     * @var \Memcached
+     * @var \Redis
      */
     private $_connection;
 
     protected function setUp() {
         parent::setUp();
-        if (!class_exists('\Memcached')) {
+        if (!class_exists('\Redis')) {
             $this->markTestSkipped("extension not loaded");
         }
-        $this->_connection = new \Memcached();
-        $this->_connection->addServer("localhost", 11211);
-        $this->_adapter = new MemcachedAdapter($this->_connection);
+        $this->_connection = new \Redis();
+        $this->_connection->connect('localhost', 6379);
+        $this->_adapter = new RedisAdapter($this->_connection);
     }
 
     protected function tearDown() {
@@ -46,7 +46,7 @@ class MemcachedAdapterTest extends \PHPUnit_Framework_TestCase {
     public function testSaveClear() {
         $x = "valB";
         $this->_adapter->saveStatus('AAA', 'BBB', $x);
-        $this->_connection->flush();
+        $this->_connection->flushDB();
 
         $this->assertEquals("", $this->_adapter->loadStatus('AAA', 'BBB'));
     }
@@ -55,7 +55,7 @@ class MemcachedAdapterTest extends \PHPUnit_Framework_TestCase {
         $x = rand(1, 1000000);
         $this->_adapter->saveStatus('A', 'BBB', $x);
         // make separate instance of clien and check if you can read through it
-        $inst = new MemcachedAdapter($this->_connection);
+        $inst = new RedisAdapter($this->_connection);
         $this->assertEquals($x, $inst->loadStatus('A', 'BBB'));
     }
 
@@ -78,9 +78,9 @@ class MemcachedAdapterTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testPrefix() {
-        $adapter1 = new MemcachedAdapter($this->_connection);
-        $adapter2 = new MemcachedAdapter($this->_connection, 1000, 'EjsmontCircuitBreaker');
-        $adapter3 = new MemcachedAdapter($this->_connection, 1000, 'EjsmontCircuitWrong');
+        $adapter1 = new RedisAdapter($this->_connection);
+        $adapter2 = new RedisAdapter($this->_connection, 1000, 'EjsmontCircuitBreaker');
+        $adapter3 = new RedisAdapter($this->_connection, 1000, 'EjsmontCircuitWrong');
 
         $adapter1->saveStatus('abc', 'def', 951);
 
@@ -92,10 +92,10 @@ class MemcachedAdapterTest extends \PHPUnit_Framework_TestCase {
      * @expectedException Ejsmont\CircuitBreaker\Storage\StorageException 
      */
     public function testFailSave() {
-        $memcachedMock = $this->getMock("Memcached", array('get', 'set'), array(), "", false);
+        $memcachedMock = $this->getMock("Redis", array('get', 'set'), array(), "", false);
         $memcachedMock->expects($this->once())->method("set")->will($this->throwException(new \Exception("some error")));
         
-        $adapter = new MemcachedAdapter($memcachedMock);
+        $adapter = new RedisAdapter($memcachedMock);
         $adapter->saveStatus('someService', 'someValue', 951);
     }
 
@@ -103,10 +103,10 @@ class MemcachedAdapterTest extends \PHPUnit_Framework_TestCase {
      * @expectedException Ejsmont\CircuitBreaker\Storage\StorageException 
      */
     public function testFailLoad() {
-        $memcachedMock = $this->getMock("Memcached", array('get', 'set'), array(), "", false);
+        $memcachedMock = $this->getMock("Redis", array('get', 'set'), array(), "", false);
         $memcachedMock->expects($this->once())->method("get")->will($this->throwException(new \Exception("some error")));
         
-        $adapter = new MemcachedAdapter($memcachedMock);
+        $adapter = new RedisAdapter($memcachedMock);
         $adapter->loadStatus('someService', 'someValue');
     }
     
