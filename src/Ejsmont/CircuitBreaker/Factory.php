@@ -60,8 +60,8 @@ class Factory {
      * Creates a circuit breaker with same settings for all services using memcached instance as a backend
      *
      * @param \Memcached $memcached      instance of a connected Memcached object
-     * @param int       $maxFailures    how many times do we allow service to fail before considering it offline
-     * @param int       $retryTimeout   how many seconds should we wait before attempting retry
+     * @param int        $maxFailures    how many times do we allow service to fail before considering it offline
+     * @param int        $retryTimeout   how many seconds should we wait before attempting retry
      * 
      * @return CircuitBreakerInterface 
      */
@@ -74,8 +74,8 @@ class Factory {
      * Creates a circuit breaker with same settings for all services using redis instance as a backend
      *
      * @param \Redis $redis        instance of a connected Redis object
-     * @param int   $maxFailures  how many times do we allow service to fail before considering it offline
-     * @param int   $retryTimeout how many seconds should we wait before attempting retry
+     * @param int    $maxFailures  how many times do we allow service to fail before considering it offline
+     * @param int    $retryTimeout how many seconds should we wait before attempting retry
      *
      * @return CircuitBreakerInterface
      */
