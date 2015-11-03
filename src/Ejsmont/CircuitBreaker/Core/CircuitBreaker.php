@@ -2,7 +2,7 @@
 
 /**
  * This file is part of the php-circuit-breaker package.
- * 
+ *
  * @link https://github.com/ejsmont-artur/php-circuit-breaker
  * @link http://artur.ejsmont.org/blog/circuit-breaker
  * @author Artur Ejsmont
@@ -17,7 +17,7 @@ use Ejsmont\CircuitBreaker\Storage\StorageInterface;
 
 /**
  * Allows user code to track avability of any service by serviceName.
- * 
+ *
  * @see Ejsmont\CircuitBreaker\CircuitBreakerInterface
  * @package Ejsmont\CircuitBreaker\Components
  */
@@ -29,12 +29,12 @@ class CircuitBreaker implements CircuitBreakerInterface {
     protected $storageAdapter;
 
     /**
-     * @var int default threshold, if service fails this many times will be disabled 
+     * @var int default threshold, if service fails this many times will be disabled
      */
     protected $defaultMaxFailures;
 
     /**
-     * @var int  how many seconds should we wait before retry 
+     * @var int  how many seconds should we wait before retry
      */
     protected $defaultRetryTimeout;
 
@@ -44,7 +44,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
      *      "serviceName1" => array('maxFailures' => X, 'retryTimeout => Y),
      *      "serviceName2" => array('maxFailures' => X, 'retryTimeout => Y),
      *  )
-     * 
+     *
      * @var array[] settings per service name
      */
     protected $settings = array();
@@ -82,10 +82,10 @@ class CircuitBreaker implements CircuitBreakerInterface {
 
     /**
      * Load setting or initialise service name with defaults for faster lookups
-     * 
+     *
      * @param string $serviceName   what service to look for
      * @param string $variable      what setting to look for
-     * @return int 
+     * @return int
      */
     private function getSetting($serviceName, $variable) {
         // make sure there are settings for the service
@@ -140,19 +140,19 @@ class CircuitBreaker implements CircuitBreakerInterface {
             $lastTest = $this->getLastTest($serviceName);
             $retryTimeout = $this->getRetryTimeout($serviceName);
             if ($lastTest + $retryTimeout < time()) {
-                // Once we wait $retryTimeout, we have to allow one 
+                // Once we wait $retryTimeout, we have to allow one
                 // thread to try to connect again. To prevent all other threads
                 // from flooding, the potentially dead db, we update the time first
                 // and then try to connect. If db is dead only one thread will hang
                 // waiting for the connection. Others will get updated timeout from stats.
-                // 
+                //
                 // 'Race condition' is between first thread getting into this line and
                 // time it takes to store the settings. In that time other threads will
-                // also be entering this statement. Even on very busy servers it 
+                // also be entering this statement. Even on very busy servers it
                 // wont allow more than a few requests to get through before stats are updated.
                 //
                 // updating lastTest
-                $this->setFailures($serviceName, $failures);
+                $this->setFailures($serviceName, 0);
                 // allowing this thread to try to connect to the resource
                 return true;
             } else {
