@@ -12,8 +12,6 @@
 
 namespace Ejsmont\CircuitBreaker\Storage\Decorator;
 
-use Ejsmont\CircuitBreaker\Storage\StorageInterface;
-
 /**
  * This file is part of the php-circuit-breaker package.
  * 
@@ -47,7 +45,7 @@ class ArrayDecorator implements StorageInterface {
     protected $instance;
 
     /**
-     * @var array Array of agregated service stats loaded from storage handler
+     * @var array Array of aggregated service stats loaded from storage handler
      */
     protected $stats = false;
 
