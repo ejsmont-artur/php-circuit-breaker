@@ -14,6 +14,7 @@ namespace Ejsmont\CircuitBreaker\Core;
 
 use Ejsmont\CircuitBreaker\CircuitBreakerInterface;
 use Ejsmont\CircuitBreaker\Storage\StorageInterface;
+use Ejsmont\CircuitBreaker\TrippedHandlerInterface;
 
 /**
  * Allows user code to track avability of any service by serviceName.
@@ -50,6 +51,12 @@ class CircuitBreaker implements CircuitBreakerInterface {
     protected $settings = array();
 
     /**
+     * Array of TrippedHandlerInterfaces
+     * @var array
+     */
+    protected $tripHandler = array();
+    
+    /**
      * Configure instance with storage implementation and default threshold and retry timeout.
      *
      * @param StorageInterface $storage      storage implementation
@@ -60,6 +67,15 @@ class CircuitBreaker implements CircuitBreakerInterface {
         $this->storageAdapter = $storage;
         $this->defaultMaxFailures = $maxFailures;
         $this->defaultRetryTimeout = $retryTimeout;
+    }
+
+    /**
+     * Register a Handler for a Service
+     * @param $serviceName
+     * @param TrippedHandlerInterface $handlerInterface
+     */
+    public function registerHandler($serviceName, TrippedHandlerInterface $handlerInterface) {
+        $this->tripHandler[$serviceName] = $handlerInterface;
     }
 
     /**
@@ -137,6 +153,16 @@ class CircuitBreaker implements CircuitBreakerInterface {
             // this is what happens most of the time so we evaluate first
             return true;
         } else {
+
+            // This code block will execute a handler for tripping
+            // Like the code block below there is still a race condition present so it will be possible for this code to
+            // execute twice or more on extremely busy systems so please keep this in mind.
+            if ($failures == $maxFailures && isset($this->tripHandler[$serviceName])) {
+                /** @var $handler TrippedHandlerInterface */
+                $handler = $this->tripHandler[$serviceName];
+                $handler($serviceName, $failures, "Service No Longer Available");
+            }
+
             $lastTest = $this->getLastTest($serviceName);
             $retryTimeout = $this->getRetryTimeout($serviceName);
             if ($lastTest + $retryTimeout < time()) {
