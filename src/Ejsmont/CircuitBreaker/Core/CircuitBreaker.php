@@ -218,4 +218,24 @@ class CircuitBreaker implements CircuitBreakerInterface {
         }
     }
 
+    /**
+     * Quick and dirty way to use the breaker
+     * 
+     * @param $serviceName
+     * @param \Closure $code
+     * @param \Closure $failed
+     */
+    public function attempt($serviceName, \Closure $code, \Closure $failed) {
+        if ($this->isAvailable($serviceName)) {
+            try {
+                $code();
+                $this->reportSuccess($serviceName);
+            } catch (\Exception $e) {
+                $this->reportFailure($serviceName);
+                $failed();
+            }
+        } else {
+            $failed();
+        }
+    }
 }
