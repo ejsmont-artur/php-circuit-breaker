@@ -1,5 +1,5 @@
 {
-    "name": "ejsmont-artur/php-circuit-breaker",
+    "name": "geggleto/php-circuit-breaker",
     "type": "library",
     "description": "PHP Circuit Breaker component",
     "keywords": ["circuit breaker","graceful", "error handling"],
