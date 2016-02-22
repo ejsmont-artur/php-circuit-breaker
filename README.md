@@ -127,23 +127,6 @@ Memcache adapter is in range of 0.0005s when talking to the local memcached proc
 The only potential performance impact is network connection time. If you chose to use remote memcached server or
 implement your own custom StorageAdapter.
 
-# Running tests
-
-* Tests are run via PHPUnit It is assumed to be installed via PEAR.
-* Tests can be ran using phpunit alone or via ant build targets.
-* The "ci" target generate code coverage repor, "phpunit" target does not.
-
-You can run all tests by any of the following:
-
-    ant
-    ant phpunit
-    ant ci
-
-You can run selected test case by running:
-
-    cd tests
-    phpunit Unit/Ejsmont/CircuitBreaker/Storage/Adapter/DummyAdapterTest.php
-
 ## Details
 
 Before documentation gets updated you can read more on the concept of circuit breaker and
@@ -159,3 +142,4 @@ Windows: `call vendor/bin/phpunit tests`
 ## Author
 
 * Artur Esjmont (https://github.com/ejsmont-artur) via http://artur.ejsmont.org
+* Glenn Eggleton (https://github.com/geggleto)
