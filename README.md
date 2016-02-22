@@ -9,18 +9,7 @@ implementations for APC and Memcached but can be extended multiple ways.
 
 # Frameworks support
 
-This library does not require any particular PHP framework, all you need is PHP 5.3 or higher.
-
-## Symfony 2
-
-If you are using [Symfony 2](https://github.com/symfony/symfony) framework you should use 
-[php-circuit-breaker-bundle](https://github.com/ejsmont-artur/php-circuit-breaker-bundle). It is a bundle i have 
-created to wrap up php-circuit-breaker and integrate it with [Symfony 2](https://github.com/symfony/symfony) components and Dependency Injection.
-
-## Other Frameworks
-
-If you are using other frameworks and you would like to use php-circuit-breaker please let me know and we can try to 
-build up an open source integration just like the one for [Symfony 2](https://github.com/symfony/symfony).
+This library does not require any particular PHP framework, all you need is PHP 5.6 or higher.
 
 # Motivation & Benefits
 
@@ -32,7 +21,7 @@ build up an open source integration just like the one for [Symfony 2](https://gi
 You can download sources and use them with your autoloader or you can use composer in which case all you nees is a require like this:
 
     "require": {
-        "ejsmont-artur/php-circuit-breaker": "*"
+        "geggleto/php-circuit-breaker": "*"
     },
 
 After that you should update composer dependencies and you are good to go.
