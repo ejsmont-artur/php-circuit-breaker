@@ -2,10 +2,11 @@ language: php
 
 php:
   - "5.6"
+  - "5.5"
 
 before_script:
-  - ./tests/before-travisci.sh
+  - phpenv config-add tests/my_config.ini
   - composer install
 
 script:
-  - phpunit tests
+  - phpunit -c tests/phpunit.xml --bootstrap tests/bootstrap.php tests
