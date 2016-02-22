@@ -1,6 +1,7 @@
-# What is php-circuit-breaker
+# Build Status 
+[![Build Status](https://travis-ci.org/geggleto/php-circuit-breaker.svg?branch=master)](https://travis-ci.org/geggleto/php-circuit-breaker)
 
-[![Build Status](https://travis-ci.org/ejsmont-artur/php-circuit-breaker.png?branch=master)](https://travis-ci.org/ejsmont-artur/php-circuit-breaker)
+# What is php-circuit-breaker
 
 A component helping you gracefully handle outages and timeouts of external services (usually remote, 3rd party services).
 
