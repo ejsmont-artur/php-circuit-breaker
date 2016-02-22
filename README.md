@@ -15,14 +15,12 @@ This library does not require any particular PHP framework, all you need is PHP 
 # Motivation & Benefits
 
 * Allow application to detect failures and adapt its behaviour without human intervention.
-* Increase robustness of services by addinf fail-safe functionality into modules.
+* Increase robustness of services by adding fail-safe functionality into modules.
 
 # Installation
 
-You can download sources and use them with your autoloader or you can use composer in which case all you nees is a require like this:
-
     "require": {
-        "geggleto/php-circuit-breaker": "*"
+        "geggleto/php-circuit-breaker": "^0.3"
     },
 
 After that you should update composer dependencies and you are good to go.
