@@ -55,6 +55,16 @@ class CircuitBreaker implements CircuitBreakerInterface {
      * @var array
      */
     protected $tripHandler = array();
+
+    /**
+     * @var string
+     */
+    protected $unavailableMessage = "Service No Longer Available";
+
+    /**
+     * @var string
+     */
+    protected $retryMessage = "Retrying Service";
     
     /**
      * Configure instance with storage implementation and default threshold and retry timeout.
@@ -77,6 +87,40 @@ class CircuitBreaker implements CircuitBreakerInterface {
     public function registerHandler($serviceName, TrippedHandlerInterface $handlerInterface) {
         $this->tripHandler[(string)$serviceName] = $handlerInterface;
     }
+
+    /**
+     * @return string
+     */
+    public function getUnavailableMessage()
+    {
+        return $this->unavailableMessage;
+    }
+
+    /**
+     * @param string $unavailableMessage
+     */
+    public function setUnavailableMessage($unavailableMessage)
+    {
+        $this->unavailableMessage = $unavailableMessage;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRetryMessage()
+    {
+        return $this->retryMessage;
+    }
+
+    /**
+     * @param string $retryMessage
+     */
+    public function setRetryMessage($retryMessage)
+    {
+        $this->retryMessage = $retryMessage;
+    }
+
+
 
     /**
      * Use this method only if you want to add server specific threshold and retry timeout.
@@ -165,7 +209,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
             if ($failures == $maxFailures && isset($this->tripHandler[(string)$serviceName])) {
                 /** @var $handler TrippedHandlerInterface */
                 $handler = $this->tripHandler[(string)$serviceName];
-                $handler($serviceName, $failures, "Service No Longer Available");
+                $handler($serviceName, $failures, $this->unavailableMessage);
             }
 
             $lastTest = $this->getLastTest((string)$serviceName);
@@ -184,6 +228,13 @@ class CircuitBreaker implements CircuitBreakerInterface {
                 //
                 // updating lastTest
                 $this->setFailures((string)$serviceName, $failures);
+
+                //Lets handle the retry
+                if (isset($this->tripHandler[(string)$serviceName])) {
+                    $handler = $this->tripHandler[(string)$serviceName];
+                    $handler($serviceName, $failures, $this->retryMessage);
+                }
+
                 // allowing this thread to try to connect to the resource
                 return true;
             } else {

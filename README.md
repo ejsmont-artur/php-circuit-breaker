@@ -107,6 +107,10 @@ circuit breaker will allow a single process to attempt
 
 # Tripping The Breaker
 Code can be executed when the breaker is tripped by providing a `TrippedHandler` for each service.
+The TrippedHandler is responsible for loggin your service outage.
+The breaker will respond to 2 states: Unavailable, and Retry. Then the breaker trips for the first time it will send the
+unavailable message, "Service No Longer Available", while after every retry attempt it will send, "Retrying Service"
+Get/Set have been provided for these messages.
 
 Here is an example of a `EmailHandler`
 
