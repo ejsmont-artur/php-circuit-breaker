@@ -17,7 +17,7 @@ use Ejsmont\CircuitBreaker\Storage\StorageInterface;
 use Ejsmont\CircuitBreaker\TrippedHandlerInterface;
 
 /**
- * Allows user code to track avability of any service by serviceName.
+ * Allows user code to track availability of any service by serviceName.
  * 
  * @see Ejsmont\CircuitBreaker\CircuitBreakerInterface
  * @package Ejsmont\CircuitBreaker\Components
@@ -65,31 +65,31 @@ class CircuitBreaker implements CircuitBreakerInterface {
      */
     public function __construct(StorageInterface $storage, $maxFailures = 20, $retryTimeout = 60) {
         $this->storageAdapter = $storage;
-        $this->defaultMaxFailures = $maxFailures;
-        $this->defaultRetryTimeout = $retryTimeout;
+        $this->defaultMaxFailures = (int)$maxFailures;
+        $this->defaultRetryTimeout = (int)$retryTimeout;
     }
 
     /**
      * Register a Handler for a Service
-     * @param $serviceName
+     * @param string $serviceName
      * @param TrippedHandlerInterface $handlerInterface
      */
     public function registerHandler($serviceName, TrippedHandlerInterface $handlerInterface) {
-        $this->tripHandler[$serviceName] = $handlerInterface;
+        $this->tripHandler[(string)$serviceName] = $handlerInterface;
     }
 
     /**
      * Use this method only if you want to add server specific threshold and retry timeout.
      *
-     * @param StorageInterface $storage      storage implementation
+     * @param String           $serviceName  service
      * @param int              $maxFailures  default threshold, if service fails this many times will be disabled
      * @param int              $retryTimeout how many seconds should we wait before retry
      * @return CircuitBreaker
      */
     public function setServiceSettings($serviceName, $maxFailures, $retryTimeout) {
-        $this->settings[$serviceName] = array(
-            'maxFailures' => $maxFailures ? $maxFailures : $this->defaultMaxFailures,
-            'retryTimeout' => $retryTimeout ? $retryTimeout : $this->defaultRetryTimeout,
+        $this->settings[(string)$serviceName] = array(
+            'maxFailures' => $maxFailures ? (int)$maxFailures : $this->defaultMaxFailures,
+            'retryTimeout' => $retryTimeout ? (int)$retryTimeout : $this->defaultRetryTimeout,
         );
         return $this;
     }
@@ -105,40 +105,45 @@ class CircuitBreaker implements CircuitBreakerInterface {
      */
     private function getSetting($serviceName, $variable) {
         // make sure there are settings for the service
-        if (!isset($this->settings[$serviceName])) {
-            $this->settings[$serviceName] = array(
+        if (!isset($this->settings[(string)$serviceName])) {
+            $this->settings[(string)$serviceName] = array(
                 'maxFailures' => $this->defaultMaxFailures,
                 'retryTimeout' => $this->defaultRetryTimeout,
             );
         }
-        return $this->settings[$serviceName][$variable];
+        return $this->settings[(string)$serviceName][$variable];
     }
 
     // ---------------------- Directly accessed by interface methods -----------------
 
     protected function getMaxFailures($serviceName) {
-        return $this->getSetting($serviceName, 'maxFailures');
+        return $this->getSetting((string)$serviceName, 'maxFailures');
     }
 
     protected function getRetryTimeout($serviceName) {
-        return $this->getSetting($serviceName, 'retryTimeout');
+        return $this->getSetting((string)$serviceName, 'retryTimeout');
     }
 
     protected function getFailures($serviceName) {
         //FIXME - catch exceptions and replace inplementation if occur
-        return (int) $this->storageAdapter->loadStatus($serviceName, 'failures');
+        return (int) $this->storageAdapter->loadStatus((string)$serviceName, 'failures');
     }
 
     protected function getLastTest($serviceName) {
         //FIXME - catch exceptions and replace inplementation if occur
-        return (int) $this->storageAdapter->loadStatus($serviceName, 'lastTest');
+        return (int) $this->storageAdapter->loadStatus((string)$serviceName, 'lastTest');
     }
 
+    /**
+     * TODO Remove reference to time() replace with DateTime object
+     * @param $serviceName
+     * @param $newValue
+     */
     protected function setFailures($serviceName, $newValue) {
         //FIXME - catch exceptions and replace inplementation if occur
-        $this->storageAdapter->saveStatus($serviceName, 'failures', $newValue, false);
+        $this->storageAdapter->saveStatus((string)$serviceName, 'failures', (int)$newValue, false);
         // make sure storage adapter flushes changes this time
-        $this->storageAdapter->saveStatus($serviceName, 'lastTest', time(), true);
+        $this->storageAdapter->saveStatus((string)$serviceName, 'lastTest', time(), true);
     }
 
     // ----------------------- INTERFACE IMPLEMENTATION -----------------------------
@@ -147,8 +152,8 @@ class CircuitBreaker implements CircuitBreakerInterface {
      * @see Zend_CircuitBreaker_Interface
      */
     public function isAvailable($serviceName) {
-        $failures = $this->getFailures($serviceName);
-        $maxFailures = $this->getMaxFailures($serviceName);
+        $failures = (int)$this->getFailures((string)$serviceName);
+        $maxFailures = (int)$this->getMaxFailures((string)$serviceName);
         if ($failures < $maxFailures) {
             // this is what happens most of the time so we evaluate first
             return true;
@@ -157,14 +162,14 @@ class CircuitBreaker implements CircuitBreakerInterface {
             // This code block will execute a handler for tripping
             // Like the code block below there is still a race condition present so it will be possible for this code to
             // execute twice or more on extremely busy systems so please keep this in mind.
-            if ($failures == $maxFailures && isset($this->tripHandler[$serviceName])) {
+            if ($failures == $maxFailures && isset($this->tripHandler[(string)$serviceName])) {
                 /** @var $handler TrippedHandlerInterface */
-                $handler = $this->tripHandler[$serviceName];
+                $handler = $this->tripHandler[(string)$serviceName];
                 $handler($serviceName, $failures, "Service No Longer Available");
             }
 
-            $lastTest = $this->getLastTest($serviceName);
-            $retryTimeout = $this->getRetryTimeout($serviceName);
+            $lastTest = $this->getLastTest((string)$serviceName);
+            $retryTimeout = $this->getRetryTimeout((string)$serviceName);
             if ($lastTest + $retryTimeout < time()) {
                 // Once we wait $retryTimeout, we have to allow one 
                 // thread to try to connect again. To prevent all other threads
@@ -178,7 +183,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
                 // wont allow more than a few requests to get through before stats are updated.
                 //
                 // updating lastTest
-                $this->setFailures($serviceName, $failures);
+                $this->setFailures((string)$serviceName, $failures);
                 // allowing this thread to try to connect to the resource
                 return true;
             } else {
@@ -193,7 +198,7 @@ class CircuitBreaker implements CircuitBreakerInterface {
 
     public function reportFailure($serviceName) {
         // there is no science here, we always increase failures count
-        $this->setFailures($serviceName, $this->getFailures($serviceName) + 1);
+        $this->setFailures((string)$serviceName, $this->getFailures((string)$serviceName) + 1);
     }
 
     /*
@@ -201,17 +206,17 @@ class CircuitBreaker implements CircuitBreakerInterface {
      */
 
     public function reportSuccess($serviceName) {
-        $failures = $this->getFailures($serviceName);
-        $maxFailures = $this->getMaxFailures($serviceName);
+        $failures = $this->getFailures((string)$serviceName);
+        $maxFailures = $this->getMaxFailures((string)$serviceName);
         if ($failures > $maxFailures) {
             // there were more failures than max failures
             // we have to reset failures count to max-1
-            $this->setFailures($serviceName, $maxFailures - 1);
+            $this->setFailures((string)$serviceName, $maxFailures - 1);
         } elseif ($failures > 0) {
             // if we are between max and 0 we decrease by 1 on each
             // success so we will go down to 0 after some time
             // but we are still more sensitive to failures
-            $this->setFailures($serviceName, $failures - 1);
+            $this->setFailures((string)$serviceName, $failures - 1);
         } else {
             // if there are no failures reported we do not
             // have to do anything on success (system operational)
@@ -226,12 +231,12 @@ class CircuitBreaker implements CircuitBreakerInterface {
      * @param \Closure $failed
      */
     public function attempt($serviceName, \Closure $code, \Closure $failed) {
-        if ($this->isAvailable($serviceName)) {
+        if ($this->isAvailable((string)$serviceName)) {
             try {
                 $code();
-                $this->reportSuccess($serviceName);
+                $this->reportSuccess((string)$serviceName);
             } catch (\Exception $e) {
-                $this->reportFailure($serviceName);
+                $this->reportFailure((string)$serviceName);
                 $failed();
             }
         } else {
