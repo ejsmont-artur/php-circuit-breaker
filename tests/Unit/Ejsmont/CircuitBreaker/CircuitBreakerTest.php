@@ -6,10 +6,15 @@ use Ejsmont\CircuitBreaker\Factory;
 use Ejsmont\CircuitBreaker\Storage\Adapter\DummyAdapter;
 use Ejsmont\CircuitBreaker\Core\CircuitBreaker;
 
-class CircuitBreakerTest extends \PHPUnit_Framework_TestCase {
+class CircuitBreakerTest extends PHPUnit_Framework_TestCase {
 
+    /** @var DummyAdapter */
     private $_adapter;
+
+    /** @var  CircuitBreaker */
     private $_cb;
+
+    /** @var array  */
     private $conf = array(
         "dbKnown" => array('maxFailures' => 5, 'retryTimeout' => 5),
         "dbWrong" => array('maxFailures' => 0, 'retryTimeout' => 0),
