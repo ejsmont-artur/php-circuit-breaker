@@ -105,6 +105,42 @@ Frontend rendering the available payment options could look like this:
 * Customisable service thresholds. You can define how many failures are necessary for service to be considered down.
 * Customisable retry timeout. You do not want to disable the service forever. After provided timeout 
 circuit breaker will allow a single process to attempt 
+* This fork includes the ability to execute a code block when a Service is modified to a failed state
+
+# Tripping The Breaker
+Code can be executed when the breaker is tripped by providing a `TrippedHandler` for each service.
+
+Here is an example of a `EmailHandler`
+
+```php
+use Ejsmont\CircuitBreaker\TrippedHandlerInterface;
+
+class EmailHandler implements TrippedHandlerInterface
+{
+    protected $targetEmail = '';
+    
+    protected $headers = '';
+    
+    public function __construct($targetEmail)
+    {
+        $this->targetEmail = $targetEmail;
+        $this->headers = 'From: xxx@xxx.ca' . "\r\n" .
+            'Reply-To: xxx@xxx.ca' . "\r\n" .
+            'X-Mailer: PHP/' . phpversion();
+    }
+
+    public function __invoke($serviceName, $count, $message)
+    {
+        mail($this->targetEmail, "Service Outage: " . $serviceName, $message, $this->headers);
+    }
+}
+```
+
+Here is how to register it. This adds a handler for "Database" service
+```php
+$circuitBreaker = $factory->getSingleApcInstance(5, 30);
+$circuitBreaker->registerHandler("Database", new \Handler\EmailHandler("your_email@your_domain.com"));
+```
 
 # Performance Impact
 
