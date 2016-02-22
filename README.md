@@ -127,7 +127,7 @@ Some implementation details has changed but the core logic is still the same.
 (Update) You can read my blog on what I do with this package, http://bolt.tamingtheelephpant.com/page/circuit-breakers-failing-gracefully
 
 ## Unit Testing
-Windows: `call vendor/bin/phpunit tests`
+`phpunit -c tests/phpunit.xml --bootstrap tests/bootstrap.php tests`
 
 ## Author
 
