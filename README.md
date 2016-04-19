@@ -44,7 +44,7 @@ After that you should update composer dependencies and you are good to go.
 * You want to keep applicaton and core processes available when "Non-Critical Feature" fails.
 
 Code of your application could look something like:
-<pre>
+```php
     $factory = new Ejsmont\CircuitBreaker\Factory();
     $circuitBreaker = $factory->getSingleApcInstance(30, 300);
 
@@ -64,7 +64,7 @@ Code of your application could look something like:
         // for example, show 'System maintenance, you cant login now.' message
         // but still let people buy as logged out customers.
     }
-</pre>
+```
 
 ## Use Case - Payment Gateway
 
@@ -78,7 +78,7 @@ As you can see that is a very powerful concept of selectively disabling feautres
 core business processes to be uninterrupted.
 
 Backend talking to the payment service could look like this:
-<pre>
+```php
     $factory = new Ejsmont\CircuitBreaker\Factory();
     $circuitBreaker = $factory->getSingleApcInstance(30, 300);
 
@@ -93,20 +93,20 @@ Backend talking to the payment service could look like this:
         // in case of your own error handle it however it makes sense but
         // dont tell circuit breaker it was 3rd party service failure
     }
-</pre>
+```
 
 Since you are recording failed and successful operations you can now use them in the front end as well 
 to hide payment options that are failing.
 
 Frontend rendering the available payment options could look like this:
-<pre>
+```php
     $factory = new Ejsmont\CircuitBreaker\Factory();
     $circuitBreaker = $factory->getSingleApcInstance(30, 300);
 
     if ($circuitBreaker->isAvailable("PaymentOptionOne")) {
         // display the option
     }
-</pre>
+```
 
 # Features
 
