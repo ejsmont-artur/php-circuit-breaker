@@ -24,7 +24,7 @@ use Ejsmont\CircuitBreaker\Storage\StorageInterface;
 class CircuitBreaker implements CircuitBreakerInterface {
 
     /**
-     * @var CircuitBreakerInterface used to load/save availability statistics
+     * @var StorageInterface used to load/save availability statistics
      */
     protected $storageAdapter;
 
