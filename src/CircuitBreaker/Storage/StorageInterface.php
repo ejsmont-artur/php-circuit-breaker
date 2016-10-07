@@ -34,7 +34,7 @@ interface StorageInterface {
      * @param 	string  $attributeName name of attribute to load
      * @return 	string  value stored or '' if value was not found
      *  
-     * @throws Ejsmont\CircuitBreaker\Storage\StorageException if storage error occurs, handler can not be used
+     * @throws StorageException if storage error occurs, handler can not be used
      */
     public function loadStatus($serviceName, $attributeName);
 
@@ -53,7 +53,7 @@ interface StorageInterface {
      * @param   boolean $flush         set to true will force immediate save, false does not guaranteed saving at all.
      * @return 	void
      * 
-     * @throws Ejsmont\CircuitBreaker\Storage\StorageException if storage error occurs, handler can not be used
+     * @throws StorageException if storage error occurs, handler can not be used
      */
     public function saveStatus($serviceName, $attributeName, $value, $flush = false);
 }

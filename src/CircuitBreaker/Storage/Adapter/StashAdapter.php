@@ -21,7 +21,7 @@ class StashAdapter extends BaseAdapter
     protected function checkExtension()
     {
         if (!class_exists('\Stash\Pool', true)) {
-            throw new Ejsmont\CircuitBreaker\Storage\StorageException("Stash not installed?");
+            throw new StorageException("Stash not installed?");
         }
     }
 
