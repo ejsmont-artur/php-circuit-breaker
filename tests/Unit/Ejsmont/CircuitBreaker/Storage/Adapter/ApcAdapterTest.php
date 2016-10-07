@@ -14,8 +14,13 @@ class ApcAdapterTest extends \PHPUnit_Framework_TestCase {
         if(!function_exists('apc_clear_cache')){
             $this->markTestSkipped("APC not installed");
         }
+
+        if(ini_get('apc.enable_cli') === '0') {
+            $this->markTestSkipped('APC not enabled for CLI');
+        }
+
         apc_clear_cache('user');
-        
+
         $this->_adapter = new ApcAdapter();
     }
 
