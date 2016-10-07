@@ -17,11 +17,14 @@
         "role" : "Developer"
       }
     ],
+    "suggest" : {
+        "tedivm/stash": "v0.14.1"
+    },
     "require": {
         "php": ">=5.4.0"
     },
     "require-dev": {
-        "phpunit/phpunit" : "^4.8"
+        "phpunit/phpunit": "^5.4"
     },
     "autoload": {
         "psr-4": {
