@@ -1,4 +1,5 @@
-<?php namespace Ejsmont\CircuitBreaker\Storage\Adapter;
+<?php
+namespace Ejsmont\CircuitBreaker\Storage\Adapter;
 
 use Ejsmont\CircuitBreaker\Storage\Adapter\BaseAdapter;
 use Ejsmont\CircuitBreaker\Storage\StorageException;
