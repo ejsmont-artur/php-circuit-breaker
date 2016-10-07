@@ -1,10 +1,12 @@
 language: php
+
 php:
-  - "5.4"
-  - "5.3"
+  - "5.6"
+  - "5.5"
+
 before_script:
-  - ./tests/before-travisci.sh
-  - pear channel-discover pear.phpdoc.org
-  - pear install phpdoc/phpDocumentor-alpha
-  - phpenv rehash
-script: ant ci
+  - phpenv config-add tests/my_config.ini
+  - composer install
+
+script:
+  - phpunit -c tests/phpunit.xml --bootstrap tests/bootstrap.php tests

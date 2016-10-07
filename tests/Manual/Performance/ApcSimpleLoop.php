@@ -13,12 +13,7 @@ namespace Tests\Manual\Performance;
 
 use Ejsmont\CircuitBreaker\Factory;
 
-require dirname(__FILE__) . '/../../SplClassLoader.php';
-
 $callCount = 10000;
-
-$autoLoader = new \SplClassLoader('Ejsmont', dirname(__FILE__) . '/../../../src');
-$autoLoader->register();
 
 $factory = new Factory();
 $cb = $factory->getSingleApcInstance(30, 3600);

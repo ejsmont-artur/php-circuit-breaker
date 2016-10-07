@@ -1,6 +1,7 @@
-# What is php-circuit-breaker
+# Build Status 
+[![Build Status](https://travis-ci.org/geggleto/php-circuit-breaker.svg?branch=master)](https://travis-ci.org/geggleto/php-circuit-breaker)
 
-[![Build Status](https://travis-ci.org/ejsmont-artur/php-circuit-breaker.png?branch=master)](https://travis-ci.org/ejsmont-artur/php-circuit-breaker)
+# What is php-circuit-breaker
 
 A component helping you gracefully handle outages and timeouts of external services (usually remote, 3rd party services).
 
@@ -9,30 +10,17 @@ implementations for APC and Memcached but can be extended multiple ways.
 
 # Frameworks support
 
-This library does not require any particular PHP framework, all you need is PHP 5.3 or higher.
-
-## Symfony 2
-
-If you are using [Symfony 2](https://github.com/symfony/symfony) framework you should use 
-[php-circuit-breaker-bundle](https://github.com/ejsmont-artur/php-circuit-breaker-bundle). It is a bundle i have 
-created to wrap up php-circuit-breaker and integrate it with [Symfony 2](https://github.com/symfony/symfony) components and Dependency Injection.
-
-## Other Frameworks
-
-If you are using other frameworks and you would like to use php-circuit-breaker please let me know and we can try to 
-build up an open source integration just like the one for [Symfony 2](https://github.com/symfony/symfony).
+This library does not require any particular PHP framework, all you need is PHP 5.6 or higher.
 
 # Motivation & Benefits
 
 * Allow application to detect failures and adapt its behaviour without human intervention.
-* Increase robustness of services by addinf fail-safe functionality into modules.
+* Increase robustness of services by adding fail-safe functionality into modules.
 
 # Installation
 
-You can download sources and use them with your autoloader or you can use composer in which case all you nees is a require like this:
-
     "require": {
-        "ejsmont-artur/php-circuit-breaker": "*"
+        "geggleto/php-circuit-breaker": "^0.3"
     },
 
 After that you should update composer dependencies and you are good to go.
@@ -115,6 +103,46 @@ Frontend rendering the available payment options could look like this:
 * Customisable service thresholds. You can define how many failures are necessary for service to be considered down.
 * Customisable retry timeout. You do not want to disable the service forever. After provided timeout 
 circuit breaker will allow a single process to attempt 
+* This fork includes the ability to execute a code block when a Service is modified to a failed state
+
+# Tripping The Breaker
+Code can be executed when the breaker is tripped by providing a `TrippedHandler` for each service.
+The TrippedHandler is responsible for loggin your service outage.
+The breaker will respond to 2 states: Unavailable, and Retry. Then the breaker trips for the first time it will send the
+unavailable message, "Service No Longer Available", while after every retry attempt it will send, "Retrying Service"
+Get/Set have been provided for these messages.
+
+Here is an example of a `EmailHandler`
+
+```php
+use Ejsmont\CircuitBreaker\TrippedHandlerInterface;
+
+class EmailHandler implements TrippedHandlerInterface
+{
+    protected $targetEmail = '';
+    
+    protected $headers = '';
+    
+    public function __construct($targetEmail)
+    {
+        $this->targetEmail = $targetEmail;
+        $this->headers = 'From: xxx@xxx.ca' . "\r\n" .
+            'Reply-To: xxx@xxx.ca' . "\r\n" .
+            'X-Mailer: PHP/' . phpversion();
+    }
+
+    public function __invoke($serviceName, $count, $message)
+    {
+        mail($this->targetEmail, "Service Outage: " . $serviceName, $message, $this->headers);
+    }
+}
+```
+
+Here is how to register it. This adds a handler for "Database" service
+```php
+$circuitBreaker = $factory->getSingleApcInstance(5, 30);
+$circuitBreaker->registerHandler("Database", new \Handler\EmailHandler("your_email@your_domain.com"));
+```
 
 # Performance Impact
 
@@ -127,23 +155,6 @@ Memcache adapter is in range of 0.0005s when talking to the local memcached proc
 The only potential performance impact is network connection time. If you chose to use remote memcached server or
 implement your own custom StorageAdapter.
 
-# Running tests
-
-* Tests are run via PHPUnit It is assumed to be installed via PEAR.
-* Tests can be ran using phpunit alone or via ant build targets.
-* The "ci" target generate code coverage repor, "phpunit" target does not.
-
-You can run all tests by any of the following:
-
-    ant
-    ant phpunit
-    ant ci
-
-You can run selected test case by running:
-
-    cd tests
-    phpunit Unit/Ejsmont/CircuitBreaker/Storage/Adapter/DummyAdapterTest.php
-
 ## Details
 
 Before documentation gets updated you can read more on the concept of circuit breaker and
@@ -151,6 +162,12 @@ its implementation on my blog http://artur.ejsmont.org/blog/circuit-breaker
 
 Some implementation details has changed but the core logic is still the same.
 
+(Update) You can read my blog on what I do with this package, http://bolt.tamingtheelephpant.com/page/circuit-breakers-failing-gracefully
+
+## Unit Testing
+`phpunit -c tests/phpunit.xml --bootstrap tests/bootstrap.php tests`
+
 ## Author
 
 * Artur Esjmont (https://github.com/ejsmont-artur) via http://artur.ejsmont.org
+* Glenn Eggleton (https://github.com/geggleto)
