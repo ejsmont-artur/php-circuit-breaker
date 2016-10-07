@@ -1,4 +1,6 @@
-<?php namespace Tests\Unit\Ejsmont\CircuitBreaker\Adapter;
+<?php
+
+namespace Tests\Unit\Ejsmont\CircuitBreaker\Adapter;
 
 use Ejsmont\CircuitBreaker\Storage\Adapter\StashAdapter;
 
