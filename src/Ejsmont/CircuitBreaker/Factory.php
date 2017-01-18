@@ -13,7 +13,7 @@
 namespace Ejsmont\CircuitBreaker;
 
 use Ejsmont\CircuitBreaker\Core\CircuitBreaker;
-use Ejsmont\CircuitBreaker\Storage\Adapter\ApcAdapter;
+use Ejsmont\CircuitBreaker\Storage\Adapter\ApcuAdapter;
 use Ejsmont\CircuitBreaker\Storage\Adapter\DummyAdapter;
 use Ejsmont\CircuitBreaker\Storage\Adapter\MemcachedAdapter;
 use Ejsmont\CircuitBreaker\Storage\Decorator\ArrayDecorator;
@@ -36,7 +36,7 @@ class Factory {
      * @return CircuitBreakerInterface 
      */
     public static function getSingleApcInstance($maxFailures = 20, $retryTimeout = 30) {
-        $storage = new ApcAdapter();
+        $storage = new ApcuAdapter();
         return new CircuitBreaker($storage, $maxFailures, $retryTimeout);
     }
 
